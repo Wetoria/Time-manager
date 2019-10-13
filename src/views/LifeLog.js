@@ -28,7 +28,6 @@ class LifeLog extends Component {
       } else {
         const result = stdout;
         const recordStrList = result.split('memo:').filter(item => item.length);
-        console.log(recordStrList);
         const recordObjList = recordStrList.map((recordStr) => {
           const temp = recordStr.split('§');
           const title = temp[0];
@@ -38,7 +37,6 @@ class LifeLog extends Component {
             content,
           };
         });
-        console.log(recordObjList);
         recordObjList.forEach((record) => {
           const {
             title,
@@ -47,13 +45,29 @@ class LifeLog extends Component {
           const fileContent = this.handleRecords(content);
           this.writeToFile(`${title}.json`, JSON.stringify(fileContent, null, 2));
           const timeCostStatistics = this.calculateTypeTimeCost(fileContent);
+          this.checkTimeCostStatistics(timeCostStatistics, fileContent[fileContent.length - 1]);
           for (let key in timeCostStatistics) {
+            // TODO: 去掉format
+            // 目前用json查看记录，所以这里做了个format，增加界面显示以后，所有记录用时间戳的形式保存，在显示时再format
             timeCostStatistics[key] = this.timeFormat(timeCostStatistics[key]);
           }
           this.writeToFile(`${title}-统计.json`, JSON.stringify(timeCostStatistics, null, 2));
         });
       }
     });
+  }
+
+  checkTimeCostStatistics(statistics, lastRecord) {
+    let totalStatistics = 0;
+    for (let key in statistics) {
+      totalStatistics += statistics[key];
+    }
+    const date = lastRecord.date;
+    const startTimeOfDate = new Date(`${date} 00:00:00`).getTime();
+    const lastRecordCostTime = lastRecord.time - startTimeOfDate;
+    statistics.total = totalStatistics;
+    statistics.lastRecordTime = lastRecord.lastUpdateTime;
+    statistics.correct = totalStatistics === (lastRecordCostTime / 1000);
   }
 
   calculateTypeTimeCost = (records) => {
@@ -64,16 +78,13 @@ class LifeLog extends Component {
       } = record;
       resultMap[type] = resultMap[type] ? resultMap[type] + record.timeCost : record.timeCost;
     });
-    console.log(resultMap);
     return resultMap;
   }
 
   handleRecords = (record) => {
     let [memoStr, reminderStr] = record.split('============');
-    console.log(memoStr, reminderStr);
     memoStr = this.removeBlockTitle(memoStr);
     reminderStr = this.removeBlockTitle(reminderStr);
-    // console.log(memoStr, reminderStr);
     const results = this.handleMemoStr(this.trim(memoStr));
     this.calculateTimeCost(results);
     return results;
@@ -81,13 +92,13 @@ class LifeLog extends Component {
 
   handleMemoStr = (memoStr) => {
     const oneMemoStrList = memoStr.split('———').filter(item => item.length);
-    // console.log(oneMemoStrList);
     const oneMemoObjList = oneMemoStrList.map((oneMemoStr) => {
       return this.handleEachMemoStr(this.trim(oneMemoStr));
     });
     return oneMemoObjList;
   }
 
+  // TODO: 如果第一条记录是跨天的，统计时会出问题。
   calculateTimeCost = (records) => {
     records.forEach((record) => {
       record.time = new Date(`${record.date} ${record.lastUpdateTime}`).getTime();
@@ -96,11 +107,12 @@ class LifeLog extends Component {
       const lastRecord = records[index - 1];
       const lastRecordTime = lastRecord ? lastRecord.time : new Date(`${record.date} 00:00:00`).getTime();
       record.timeCost = (record.time - lastRecordTime) / 1000;
-      record.formatTimeCost = this.timeFormat(record.timeCost);
+      record.timeCostFormat = this.timeFormat(record.timeCost);
     })
   }
 
   timeFormat = (time) => {
+    if (typeof time !== 'number') return time;
     const hour = parseInt(time / 3600);
     const minute = parseInt((time % 3600) / 60);
     const second = time % 60;
