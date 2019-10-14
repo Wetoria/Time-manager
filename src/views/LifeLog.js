@@ -20,6 +20,7 @@ class LifeLog extends Component {
     });
   }
 
+  // TODO: 这个方法应该只获取印象笔记记录，然后将获取到的结果返回出去。
   getNotes = () => {
     const path = './scripts/evernote.scpt';
     exec('osascript ' + path, (err, stdout) => {
@@ -49,7 +50,12 @@ class LifeLog extends Component {
           for (let key in timeCostStatistics) {
             // TODO: 去掉format
             // 目前用json查看记录，所以这里做了个format，增加界面显示以后，所有记录用时间戳的形式保存，在显示时再format
-            timeCostStatistics[key] = this.timeFormat(timeCostStatistics[key]);
+            if (!['lastRecordTime', 'correct'].includes(key)) {
+              timeCostStatistics[key] = {
+                timestamp: timeCostStatistics[key],
+                formatString: this.timeFormat(timeCostStatistics[key]),
+              };
+            }
           }
           this.writeToFile(`${title}-统计.json`, JSON.stringify(timeCostStatistics, null, 2));
         });
