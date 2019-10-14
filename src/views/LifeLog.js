@@ -47,10 +47,11 @@ class LifeLog extends Component {
           this.writeToFile(`${title}.json`, JSON.stringify(fileContent, null, 2));
           const timeCostStatistics = this.calculateTypeTimeCost(fileContent);
           this.checkTimeCostStatistics(timeCostStatistics, fileContent[fileContent.length - 1]);
+          timeCostStatistics['date'] = title.replace(/[(记录)|日]/g, '').replace(/[年月]/g, '/');
           for (let key in timeCostStatistics) {
             // TODO: 去掉format
             // 目前用json查看记录，所以这里做了个format，增加界面显示以后，所有记录用时间戳的形式保存，在显示时再format
-            if (!['lastRecordTime', 'correct'].includes(key)) {
+            if (!['lastRecordTime', 'correct', 'date'].includes(key)) {
               timeCostStatistics[key] = {
                 timestamp: timeCostStatistics[key],
                 formatString: this.timeFormat(timeCostStatistics[key]),
