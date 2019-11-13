@@ -153,6 +153,8 @@ class LifeLog extends Component {
     createTime = temp[1];
     if (title.indexOf('：') !== -1) {
       type = title.split('：')[0];
+    } else {
+      type = this.checkRecordType(title);
     }
     return {
       date,
@@ -162,6 +164,23 @@ class LifeLog extends Component {
       type,
       content,
     };
+  }
+
+  checkRecordType(title) {
+    if (title.includes('，')) return;
+    let result = '';
+    const checkMap = JSON.parse(fs.readFileSync('./CheckMap.json'));
+    for (const [key, values] of Object.entries(checkMap)) {
+      if (title === key) {
+        result = key;
+        break;
+      }
+      if (values.includes(title)) {
+        result = key;
+        break;
+      }
+    }
+    return result;
   }
 
   writeToFile(fileName, str) {
