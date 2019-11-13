@@ -170,12 +170,16 @@ class LifeLog extends Component {
     if (title.includes('，')) return;
     let result = '';
     const checkMap = JSON.parse(fs.readFileSync('./CheckMap.json'));
+    let tempType = title;
+    if (title.includes('-')) {
+      tempType = title.split('-')[0];
+    }
     for (const [key, values] of Object.entries(checkMap)) {
-      if (title === key) {
+      if (tempType === key) {
         result = key;
         break;
       }
-      if (values.includes(title)) {
+      if (values.includes(tempType)) {
         result = key;
         break;
       }
