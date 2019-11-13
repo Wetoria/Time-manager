@@ -29,7 +29,6 @@ class SummaryCharts extends Component {
         results.push(record);
       }
     });
-    console.log(results);
     results.sort((dayA, dayB) => {
       const dayATimestamp = new Date(`${dayA.date} 00:00:00`).getTime();
       const dayBTimestamp = new Date(`${dayB.date} 00:00:00`).getTime();
@@ -41,7 +40,6 @@ class SummaryCharts extends Component {
   }
 
   componentDidMount = () => {
-    console.log('did mounted');
     this.getAllRecordsSummaryFilePath();
   }
 
@@ -63,6 +61,9 @@ class SummaryCharts extends Component {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                boxShadow: '1px 1px 2px #BDC3C7',
+                marginRight: '10px',
+                marginBottom: '10px',
               }}
               key={item.date}
             >
