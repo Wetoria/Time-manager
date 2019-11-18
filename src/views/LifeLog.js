@@ -156,7 +156,7 @@ class LifeLog extends Component {
     } else {
       type = this.checkRecordType(title);
     }
-    return {
+    const result = {
       date,
       createTime,
       lastUpdateTime,
@@ -164,6 +164,14 @@ class LifeLog extends Component {
       type,
       content,
     };
+    this.checkDateNeedRepairAndRepair(result);
+    return result;
+  }
+
+  checkDateNeedRepairAndRepair(record) {
+    if (record.title.includes('@')) {
+      record.lastUpdateTime = record.title.split('@')[1];
+    }
   }
 
   checkRecordType(title) {
